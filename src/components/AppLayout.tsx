@@ -2,6 +2,8 @@ import { NavLink as RouterNavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Activity, BarChart3, BookOpen, LineChart, User, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { WalletButton } from "@/components/WalletButton";
+import { MarketTicker } from "@/components/dashboard/MarketTicker";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: BarChart3 },
@@ -17,6 +19,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Market Ticker Bar */}
+      <div className="border-b border-border bg-card/30 px-4 sm:px-6 py-1.5">
+        <div className="max-w-[1600px] mx-auto">
+          <MarketTicker />
+        </div>
+      </div>
+
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
@@ -52,9 +61,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <WalletButton />
             <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium bg-profit/10 text-profit">
               <span className="h-1.5 w-1.5 rounded-full bg-profit animate-pulse-glow" />
-              Devnet
+              Mainnet
             </span>
             <span className="text-xs text-muted-foreground hidden lg:inline truncate max-w-[150px]">{user?.email}</span>
             <button onClick={signOut} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">

@@ -2,11 +2,12 @@ import { useState } from "react";
 import { useTrades, useAddTrade, useDeleteTrade, useUpdateTradeNote } from "@/hooks/useTrades";
 import { TradeTable } from "@/components/dashboard/TradeTable";
 import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
-import { Plus, X } from "lucide-react";
+import { WalletImport } from "@/components/dashboard/WalletImport";
+import { Plus, X, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Trade } from "@/types/trading";
 
-const SYMBOLS = ["SOL-PERP", "BTC-PERP", "ETH-PERP", "BONK-PERP", "JUP-PERP", "WIF-PERP"];
+const SYMBOLS = ["SOL-PERP", "BTC-PERP", "ETH-PERP", "BONK-PERP", "JUP-PERP", "WIF-PERP", "SOL/USDC", "ETH/USDC", "BTC/USDC"];
 
 function AddTradeForm({ onClose }: { onClose: () => void }) {
   const addTrade = useAddTrade();
@@ -113,6 +114,7 @@ function AddTradeForm({ onClose }: { onClose: () => void }) {
 export default function Journal() {
   const { data: trades = [], isLoading } = useTrades();
   const [showForm, setShowForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [selectedSymbol, setSelectedSymbol] = useState("all");
   const [dateRange, setDateRange] = useState("All");
 
@@ -135,15 +137,25 @@ export default function Journal() {
           <h2 className="text-lg font-semibold text-foreground">Trade Journal</h2>
           <p className="text-xs text-muted-foreground">Log and review your trades</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-        >
-          <Plus className="h-4 w-4" />
-          Add Trade
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setShowImport(!showImport); setShowForm(false); }}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Import On-Chain
+          </button>
+          <button
+            onClick={() => { setShowForm(!showForm); setShowImport(false); }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            <Plus className="h-4 w-4" />
+            Add Trade
+          </button>
+        </div>
       </div>
 
+      {showImport && <WalletImport />}
       {showForm && <AddTradeForm onClose={() => setShowForm(false)} />}
 
       <DashboardFilters
