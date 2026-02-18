@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useTrades, useAddTrade, useDeleteTrade, useUpdateTradeNote } from "@/hooks/useTrades";
+import { useTrades, useAddTrade } from "@/hooks/useTrades";
 import { TradeTable } from "@/components/dashboard/TradeTable";
 import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
 import { WalletImport } from "@/components/dashboard/WalletImport";
-import { Plus, X, Download } from "lucide-react";
+import { PerpImport } from "@/components/dashboard/PerpImport";
+import { Plus, X, Download, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Trade } from "@/types/trading";
+import { motion, AnimatePresence } from "framer-motion";
 
 const SYMBOLS = ["SOL-PERP", "BTC-PERP", "ETH-PERP", "BONK-PERP", "JUP-PERP", "WIF-PERP", "SOL/USDC", "ETH/USDC", "BTC/USDC"];
 
@@ -71,13 +72,18 @@ function AddTradeForm({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const inputClass = "w-full rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary";
+  const inputClass = "w-full rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-colors";
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 mb-6 animate-slide-up">
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="rounded-xl border border-border bg-card p-5 mb-5"
+    >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-foreground">Add Trade</h3>
-        <button onClick={onClose} className="p-1 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+        <button onClick={onClose} className="p-1 text-muted-foreground hover:text-foreground transition-colors"><X className="h-4 w-4" /></button>
       </div>
       <form onSubmit={handleSubmit} className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <select value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} className={inputClass}>
@@ -102,19 +108,19 @@ function AddTradeForm({ onClose }: { onClose: () => void }) {
         <input type="datetime-local" placeholder="Exit Time" value={form.exitTime} onChange={(e) => setForm({ ...form, exitTime: e.target.value })} className={inputClass} />
         <input type="text" placeholder="Note (optional)" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={`${inputClass} col-span-2`} />
         <div className="col-span-2 md:col-span-4 flex justify-end">
-          <button type="submit" disabled={addTrade.isPending} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+          <button type="submit" disabled={addTrade.isPending} className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
             {addTrade.isPending ? "Saving..." : "Save Trade"}
           </button>
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 }
 
 export default function Journal() {
   const { data: trades = [], isLoading } = useTrades();
   const [showForm, setShowForm] = useState(false);
-  const [showImport, setShowImport] = useState(false);
+  const [showImport, setShowImport] = useState<"none" | "onchain" | "perps">("none");
   const [selectedSymbol, setSelectedSymbol] = useState("all");
   const [dateRange, setDateRange] = useState("All");
 
@@ -131,23 +137,34 @@ export default function Journal() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Trade Journal</h2>
-          <p className="text-xs text-muted-foreground">Log and review your trades</p>
+          <p className="text-xs text-muted-foreground">Log, import, and review your trades</p>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => { setShowImport(!showImport); setShowForm(false); }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted/50 transition-colors"
+            onClick={() => { setShowImport(showImport === "onchain" ? "none" : "onchain"); setShowForm(false); }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
+              showImport === "onchain" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-foreground hover:bg-muted/50"
+            }`}
           >
             <Download className="h-3.5 w-3.5" />
-            Import On-Chain
+            On-Chain
           </button>
           <button
-            onClick={() => { setShowForm(!showForm); setShowImport(false); }}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+            onClick={() => { setShowImport(showImport === "perps" ? "none" : "perps"); setShowForm(false); }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
+              showImport === "perps" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-foreground hover:bg-muted/50"
+            }`}
+          >
+            <Zap className="h-3.5 w-3.5" />
+            Perps
+          </button>
+          <button
+            onClick={() => { setShowForm(!showForm); setShowImport("none"); }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
           >
             <Plus className="h-4 w-4" />
             Add Trade
@@ -155,8 +172,21 @@ export default function Journal() {
         </div>
       </div>
 
-      {showImport && <WalletImport />}
-      {showForm && <AddTradeForm onClose={() => setShowForm(false)} />}
+      <AnimatePresence mode="wait">
+        {showImport === "onchain" && (
+          <motion.div key="onchain" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+            <WalletImport />
+          </motion.div>
+        )}
+        {showImport === "perps" && (
+          <motion.div key="perps" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+            <PerpImport />
+          </motion.div>
+        )}
+        {showForm && (
+          <AddTradeForm key="form" onClose={() => setShowForm(false)} />
+        )}
+      </AnimatePresence>
 
       <DashboardFilters
         symbols={symbols}

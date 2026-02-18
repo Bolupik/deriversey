@@ -5,6 +5,7 @@ import { FeeChart } from "@/components/dashboard/FeeChart";
 import { SymbolTable } from "@/components/dashboard/SymbolTable";
 import { SessionPanel } from "@/components/dashboard/SessionPanel";
 import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
+import { TradingViewChart } from "@/components/dashboard/TradingViewChart";
 import { useTrades } from "@/hooks/useTrades";
 import {
   computeStats,
@@ -14,6 +15,7 @@ import {
   computeSessionPerformance,
   computeOrderTypePerformance,
 } from "@/data/mockData";
+import { BarChart3 } from "lucide-react";
 
 const Index = () => {
   const { data: trades = [], isLoading } = useTrades();
@@ -52,19 +54,19 @@ const Index = () => {
   if (trades.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-          <span className="text-2xl">📊</span>
+        <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 glow-primary">
+          <BarChart3 className="h-7 w-7 text-primary" />
         </div>
         <h2 className="text-lg font-semibold text-foreground mb-1">No trades yet</h2>
         <p className="text-sm text-muted-foreground max-w-sm">
-          Head to the <a href="/journal" className="text-primary hover:underline">Journal</a> page to add your first trade and start tracking your performance.
+          Head to the <a href="/journal" className="text-primary hover:underline font-medium">Journal</a> to add your first trade, or connect your wallet on the <a href="/portfolio" className="text-primary hover:underline font-medium">Portfolio</a> page.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <DashboardFilters
         symbols={symbols}
         selectedSymbol={selectedSymbol}
@@ -80,44 +82,51 @@ const Index = () => {
         <FeeChart data={fees} totalFees={stats.totalFees} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <SymbolTable data={symbolPerf} />
-        <SessionPanel data={sessionPerf} orderTypeData={orderTypePerf} />
-        <div className="rounded-lg border border-border bg-card p-5">
-          <h3 className="text-sm font-medium text-foreground mb-3">Long/Short Ratio</h3>
-          <div className="space-y-4">
-            <div className="flex items-end gap-4">
-              <div className="flex-1">
-                <p className="text-xs text-muted-foreground mb-1">Long</p>
-                <div className="h-3 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full rounded-full bg-profit transition-all" style={{ width: `${stats.longRatio}%` }} />
+        <div className="lg:col-span-2">
+          <TradingViewChart symbol="SOL" />
+        </div>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-border bg-card p-5">
+            <h3 className="text-sm font-medium text-foreground mb-3">Long/Short Ratio</h3>
+            <div className="space-y-4">
+              <div className="flex items-end gap-4">
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground mb-1">Long</p>
+                  <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full rounded-full bg-profit transition-all duration-500" style={{ width: `${stats.longRatio}%` }} />
+                  </div>
+                  <p className="text-lg font-mono font-semibold text-profit mt-1">{stats.longRatio}%</p>
                 </div>
-                <p className="text-lg font-mono font-semibold text-profit mt-1">{stats.longRatio}%</p>
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground mb-1">Short</p>
+                  <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full rounded-full bg-loss transition-all duration-500" style={{ width: `${stats.shortRatio}%` }} />
+                  </div>
+                  <p className="text-lg font-mono font-semibold text-loss mt-1">{stats.shortRatio}%</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-xs text-muted-foreground mb-1">Short</p>
-                <div className="h-3 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full rounded-full bg-loss transition-all" style={{ width: `${stats.shortRatio}%` }} />
-                </div>
-                <p className="text-lg font-mono font-semibold text-loss mt-1">{stats.shortRatio}%</p>
+              <div className="pt-3 border-t border-border space-y-2.5">
+                <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Quick Stats</h4>
+                {[
+                  ["Profit Factor", stats.profitFactor.toString()],
+                  ["Sharpe Ratio", stats.sharpeRatio.toString()],
+                  ["Max Drawdown", `$${stats.maxDrawdown.toLocaleString()}`],
+                  ["Best Streak", `${stats.consecutiveWins} wins`],
+                  ["Worst Streak", `${stats.consecutiveLosses} losses`],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="font-mono text-foreground">{value}</span>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div className="pt-3 border-t border-border space-y-3">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Quick Stats</h4>
-              {[
-                ["Profit Factor", stats.profitFactor.toString()],
-                ["Sharpe Ratio", stats.sharpeRatio.toString()],
-                ["Max Drawdown", `$${stats.maxDrawdown.toLocaleString()}`],
-                ["Best Streak", `${stats.consecutiveWins} wins`],
-                ["Worst Streak", `${stats.consecutiveLosses} losses`],
-              ].map(([label, value]) => (
-                <div key={label} className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">{label}</span>
-                  <span className="font-mono text-foreground">{value}</span>
-                </div>
-              ))}
             </div>
           </div>
         </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <SymbolTable data={symbolPerf} />
+        <SessionPanel data={sessionPerf} orderTypeData={orderTypePerf} />
       </div>
     </div>
   );
