@@ -14,13 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          preferred_symbols: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferred_symbols?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferred_symbols?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          created_at: string
+          duration: number | null
+          entry_price: number
+          entry_time: string
+          exit_price: number | null
+          exit_time: string | null
+          fees: number | null
+          id: string
+          leverage: number
+          note: string | null
+          order_type: string
+          pnl: number | null
+          pnl_percent: number | null
+          side: string
+          size: number
+          status: string | null
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: number | null
+          entry_price: number
+          entry_time?: string
+          exit_price?: number | null
+          exit_time?: string | null
+          fees?: number | null
+          id?: string
+          leverage?: number
+          note?: string | null
+          order_type: string
+          pnl?: number | null
+          pnl_percent?: number | null
+          side: string
+          size: number
+          status?: string | null
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number | null
+          entry_price?: number
+          entry_time?: string
+          exit_price?: number | null
+          exit_time?: string | null
+          fees?: number | null
+          id?: string
+          leverage?: number
+          note?: string | null
+          order_type?: string
+          pnl?: number | null
+          pnl_percent?: number | null
+          side?: string
+          size?: number
+          status?: string | null
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_owner_profile: { Args: { _profile_id: string }; Returns: boolean }
+      is_owner_trade: { Args: { _trade_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
