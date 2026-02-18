@@ -11,7 +11,7 @@ export function WalletButton() {
     const short = address.slice(0, 4) + "..." + address.slice(-4);
     return (
       <div className="flex items-center gap-1.5">
-        <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-medium bg-primary/10 text-primary">
+        <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-medium bg-primary/10 text-primary border border-primary/20">
           <Wallet className="h-3 w-3" />
           {short}
         </span>
@@ -29,10 +29,10 @@ export function WalletButton() {
   return (
     <button
       onClick={() => setVisible(true)}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors"
     >
       <Wallet className="h-3.5 w-3.5" />
-      Connect Wallet
+      Connect
     </button>
   );
 }
