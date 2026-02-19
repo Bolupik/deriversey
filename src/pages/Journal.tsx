@@ -54,11 +54,10 @@ function TradeEntryPanel({ chartSymbol, onSymbolChange }: { chartSymbol: string;
 
     let pnl = 0;
     let duration = 0;
-    let status: "open" | "win" | "loss" = "open";
+    const status = "open";
 
     if (exit > 0) {
       pnl = ((exit - entry) / entry) * size * lev * (form.side === "long" ? 1 : -1) - fees;
-      status = pnl >= 0 ? "win" : "loss";
       if (form.exitTime) {
         duration = Math.round((new Date(form.exitTime).getTime() - new Date(form.entryTime).getTime()) / 60000);
       }

@@ -31,7 +31,7 @@ export function useTrades() {
         entryTime: t.entry_time,
         exitTime: t.exit_time || t.entry_time,
         duration: t.duration || 0,
-        status: (t.status === "win" || t.status === "loss") ? t.status : (Number(t.pnl) >= 0 ? "win" : "loss"),
+        status: (t.status === "open" || t.status === "win" || t.status === "loss") ? t.status : "open",
         note: t.note || undefined,
       }));
     },
@@ -91,6 +91,36 @@ export function useUpdateTradeNote() {
   return useMutation({
     mutationFn: async ({ id, note }: { id: string; note: string }) => {
       const { error } = await supabase.from("trades").update({ note }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["trades"] });
+    },
+  });
+}
+
+export function useUpdateTrade() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (trade: Trade) => {
+      const { error } = await supabase.from("trades").update({
+        symbol: trade.symbol,
+        side: trade.side,
+        order_type: trade.orderType,
+        entry_price: trade.entryPrice,
+        exit_price: trade.exitPrice || null,
+        size: trade.size,
+        leverage: trade.leverage,
+        pnl: trade.pnl,
+        pnl_percent: trade.pnlPercent,
+        fees: trade.fees,
+        entry_time: trade.entryTime,
+        exit_time: trade.exitTime || null,
+        duration: trade.duration,
+        status: trade.status,
+        note: trade.note || null,
+      }).eq("id", trade.id);
       if (error) throw error;
     },
     onSuccess: () => {
