@@ -8,9 +8,7 @@ export default {
     container: {
       center: true,
       padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      screens: { "2xl": "1400px" },
     },
     extend: {
       colors: {
@@ -90,18 +88,6 @@ export default {
           from: { opacity: "0", transform: "translateY(16px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
-        "slide-down": {
-          from: { opacity: "0", transform: "translateY(-16px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-        "slide-in-left": {
-          from: { opacity: "0", transform: "translateX(-20px)" },
-          to: { opacity: "1", transform: "translateX(0)" },
-        },
-        "slide-in-right": {
-          from: { opacity: "0", transform: "translateX(20px)" },
-          to: { opacity: "1", transform: "translateX(0)" },
-        },
         "fade-in": {
           from: { opacity: "0" },
           to: { opacity: "1" },
@@ -114,29 +100,15 @@ export default {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(-50%)" },
         },
-        "float": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-6px)" },
-        },
-        "gradient-shift": {
-          "0%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
-          "100%": { backgroundPosition: "0% 50%" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "slide-up": "slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-        "slide-down": "slide-down 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-        "slide-in-left": "slide-in-left 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-        "slide-in-right": "slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
         "fade-in": "fade-in 0.4s ease-out",
         "scale-in": "scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         "ticker-scroll": "ticker-scroll 40s linear infinite",
-        "float": "float 3s ease-in-out infinite",
-        "gradient-shift": "gradient-shift 6s ease infinite",
       },
     },
   },

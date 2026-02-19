@@ -172,10 +172,10 @@ export function TradeTable({ trades }: TradeTableProps) {
   const inputClass = "bg-muted/30 border border-border/60 rounded px-2 py-1.5 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50";
 
   return (
-    <div className="rounded-xl border border-border/60 glass-card">
-      <div className="p-4 border-b border-border/50">
-        <h3 className="text-sm font-medium text-foreground">Trade History</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">{trades.length} trades</p>
+    <div className="rounded-lg kinetic-card">
+      <div className="p-5 border-b border-border/30">
+        <h3 className="text-overline">Trade History</h3>
+        <p className="text-xs text-muted-foreground mt-1 font-mono">{trades.length} trades</p>
       </div>
 
       <div className="overflow-x-auto">
