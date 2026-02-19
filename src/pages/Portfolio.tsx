@@ -1,12 +1,15 @@
 import { PortfolioPanel } from "@/components/dashboard/PortfolioPanel";
 import { TradingViewChart } from "@/components/dashboard/TradingViewChart";
+import { useTokenPrices } from "@/hooks/useTokenPrices";
 import { useState } from "react";
-import { Briefcase } from "lucide-react";
+import { Briefcase, TrendingUp, TrendingDown } from "lucide-react";
+import { motion } from "framer-motion";
 
 const CHART_TOKENS = ["SOL", "BTC", "ETH", "JUP", "BONK", "WIF", "RAY"];
 
 export default function Portfolio() {
   const [chartSymbol, setChartSymbol] = useState("SOL");
+  const { data: tokenPrices = [] } = useTokenPrices();
 
   return (
     <div className="space-y-6">
@@ -20,28 +23,43 @@ export default function Portfolio() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 space-y-5">
-          {/* Token selector */}
-          <div className="flex items-center gap-1 flex-wrap">
-            {CHART_TOKENS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setChartSymbol(t)}
-                className={`px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-all ${
-                  chartSymbol === t
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
+      {/* Token price cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
+        {CHART_TOKENS.map((sym, i) => {
+          const price = tokenPrices.find(t => t.symbol === sym);
+          const isSelected = chartSymbol === sym;
+          return (
+            <motion.button
+              key={sym}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              onClick={() => setChartSymbol(sym)}
+              className={`rounded-lg border p-3 text-left transition-all ${
+                isSelected
+                  ? "border-primary bg-primary/5"
+                  : "border-border bg-card hover:border-muted-foreground/30"
+              }`}
+            >
+              <p className="text-[10px] font-mono font-medium text-muted-foreground">{sym}</p>
+              <p className="text-sm font-mono font-semibold text-foreground mt-0.5">
+                {price ? `$${price.price.toLocaleString(undefined, { maximumFractionDigits: price.price < 1 ? 6 : 2 })}` : "—"}
+              </p>
+              {price && (
+                <div className={`flex items-center gap-0.5 mt-1 text-[10px] font-mono ${price.change24h >= 0 ? "text-profit" : "text-loss"}`}>
+                  {price.change24h >= 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                  {price.change24h >= 0 ? "+" : ""}{price.change24h.toFixed(2)}%
+                </div>
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2">
           <TradingViewChart symbol={chartSymbol} />
         </div>
-
         <PortfolioPanel />
       </div>
     </div>

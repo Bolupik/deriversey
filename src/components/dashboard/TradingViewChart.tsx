@@ -15,23 +15,57 @@ const SYMBOL_MAP: Record<string, string> = {
   RAY: "raydium",
 };
 
-async function fetchOHLC(coinId: string, days = 30) {
-  const res = await fetch(
+interface OHLCVData {
+  time: any;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+async function fetchOHLCV(coinId: string, days = 30): Promise<OHLCVData[]> {
+  // Fetch OHLC data
+  const ohlcRes = await fetch(
     `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=${days}`
   );
-  if (!res.ok) {
-    if (res.status === 429) throw new Error("Rate limited — try again shortly");
+  if (!ohlcRes.ok) {
+    if (ohlcRes.status === 429) throw new Error("Rate limited — try again shortly");
     throw new Error("Failed to fetch OHLC data");
   }
-  const data = await res.json();
-  if (!Array.isArray(data) || data.length === 0) throw new Error("No chart data available");
-  return data.map((d: number[]) => ({
-    time: Math.floor(d[0] / 1000) as any,
-    open: d[1],
-    high: d[2],
-    low: d[3],
-    close: d[4],
-  }));
+  const ohlcData = await ohlcRes.json();
+  if (!Array.isArray(ohlcData) || ohlcData.length === 0) throw new Error("No chart data available");
+
+  // Fetch market chart for volume data
+  const volRes = await fetch(
+    `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`
+  );
+  
+  let volumeMap = new Map<number, number>();
+  if (volRes.ok) {
+    const volData = await volRes.json();
+    if (volData?.total_volumes) {
+      for (const [ts, vol] of volData.total_volumes) {
+        // Round to nearest 4-hour bucket to match OHLC timestamps
+        const bucket = Math.floor(ts / (4 * 3600 * 1000)) * (4 * 3600);
+        volumeMap.set(bucket, vol);
+      }
+    }
+  }
+
+  return ohlcData.map((d: number[]) => {
+    const timeSec = Math.floor(d[0] / 1000);
+    const bucket = Math.floor(d[0] / (4 * 3600 * 1000)) * (4 * 3600);
+    const volume = volumeMap.get(bucket) || 0;
+    return {
+      time: timeSec as any,
+      open: d[1],
+      high: d[2],
+      low: d[3],
+      close: d[4],
+      volume,
+    };
+  });
 }
 
 export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
@@ -46,7 +80,6 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
   useEffect(() => {
     if (!chartRef.current) return;
 
-    // Clear previous chart
     chartRef.current.innerHTML = "";
 
     const chart = createChart(chartRef.current, {
@@ -86,15 +119,34 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
       wickDownColor: "hsl(0, 72%, 65%)",
     });
 
+    const volumeSeries = chart.addHistogramSeries({
+      priceFormat: { type: "volume" },
+      priceScaleId: "volume",
+    });
+
+    chart.priceScale("volume").applyOptions({
+      scaleMargins: { top: 0.8, bottom: 0 },
+    });
+
     const coinId = SYMBOL_MAP[symbol] || "solana";
     setLoading(true);
     setError("");
 
-    fetchOHLC(coinId, days)
+    fetchOHLCV(coinId, days)
       .then((data) => {
         candleSeries.setData(data);
+
+        volumeSeries.setData(
+          data.map((d) => ({
+            time: d.time,
+            value: d.volume,
+            color: d.close >= d.open
+              ? "hsla(162, 85%, 45%, 0.25)"
+              : "hsla(0, 72%, 55%, 0.25)",
+          }))
+        );
+
         chart.timeScale().fitContent();
-        // Set last price info
         if (data.length > 0) {
           const last = data[data.length - 1];
           const first = data[0];
