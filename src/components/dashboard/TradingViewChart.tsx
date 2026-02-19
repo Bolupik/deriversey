@@ -85,24 +85,24 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
     const chart = createChart(chartRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "hsl(215, 14%, 45%)",
+        textColor: "#636b78",
         fontFamily: "'IBM Plex Mono', monospace",
         fontSize: 10,
       },
       grid: {
-        vertLines: { color: "hsl(225, 16%, 13%)" },
-        horzLines: { color: "hsl(225, 16%, 13%)" },
+        vertLines: { color: "#1e2130" },
+        horzLines: { color: "#1e2130" },
       },
       crosshair: {
-        vertLine: { color: "hsl(162, 85%, 45%)", width: 1, style: 2 },
-        horzLine: { color: "hsl(162, 85%, 45%)", width: 1, style: 2 },
+        vertLine: { color: "#11d5a0", width: 1, style: 2 },
+        horzLine: { color: "#11d5a0", width: 1, style: 2 },
       },
       timeScale: {
-        borderColor: "hsl(225, 16%, 14%)",
+        borderColor: "#1f2233",
         timeVisible: true,
       },
       rightPriceScale: {
-        borderColor: "hsl(225, 16%, 14%)",
+        borderColor: "#1f2233",
       },
       handleScale: { axisPressedMouseMove: true },
       handleScroll: { vertTouchDrag: false },
@@ -111,12 +111,12 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
     chartApi.current = chart;
 
     const candleSeries = chart.addCandlestickSeries({
-      upColor: "hsl(162, 85%, 45%)",
-      downColor: "hsl(0, 72%, 55%)",
-      borderUpColor: "hsl(162, 85%, 45%)",
-      borderDownColor: "hsl(0, 72%, 55%)",
-      wickUpColor: "hsl(162, 85%, 55%)",
-      wickDownColor: "hsl(0, 72%, 65%)",
+      upColor: "#11d5a0",
+      downColor: "#e04858",
+      borderUpColor: "#11d5a0",
+      borderDownColor: "#e04858",
+      wickUpColor: "#30e0b4",
+      wickDownColor: "#e87080",
     });
 
     const volumeSeries = chart.addHistogramSeries({
@@ -141,8 +141,8 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
             time: d.time,
             value: d.volume,
             color: d.close >= d.open
-              ? "hsla(162, 85%, 45%, 0.25)"
-              : "hsla(0, 72%, 55%, 0.25)",
+              ? "rgba(17, 213, 160, 0.25)"
+              : "rgba(224, 72, 88, 0.25)",
           }))
         );
 
