@@ -99,14 +99,26 @@ const Index = () => {
 
       <StatsGrid stats={stats} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-5"
+      >
         <div className="lg:col-span-2">
           <PnlChart data={dailyPnl} />
         </div>
         <FeeChart data={fees} totalFees={stats.totalFees} />
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-5"
+      >
         <div className="lg:col-span-2">
           <TradingViewChart symbol="SOL" />
         </div>
@@ -119,7 +131,8 @@ const Index = () => {
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${stats.longRatio}%` }}
+                    whileInView={{ width: `${stats.longRatio}%` }}
+                    viewport={{ once: true }}
                     transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                     className="h-full rounded-full bg-primary"
                   />
@@ -131,7 +144,8 @@ const Index = () => {
                 <div className="h-2 rounded-full bg-muted overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${stats.shortRatio}%` }}
+                    whileInView={{ width: `${stats.shortRatio}%` }}
+                    viewport={{ once: true }}
                     transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                     className="h-full rounded-full bg-loss"
                   />
@@ -157,12 +171,18 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-5"
+      >
         <SymbolTable data={symbolPerf} />
         <SessionPanel data={sessionPerf} orderTypeData={orderTypePerf} />
-      </div>
+      </motion.div>
     </div>
   );
 };

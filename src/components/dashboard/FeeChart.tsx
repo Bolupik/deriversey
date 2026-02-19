@@ -1,5 +1,6 @@
 import { FeeBreakdown } from "@/types/trading";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { motion } from "framer-motion";
 
 interface FeeChartProps {
   data: FeeBreakdown[];
@@ -10,7 +11,13 @@ const COLORS = ["hsl(187, 80%, 48%)", "hsl(260, 60%, 55%)", "hsl(38, 92%, 50%)"]
 
 export function FeeChart({ data, totalFees }: FeeChartProps) {
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+      className="rounded-lg border border-border bg-card p-5"
+    >
       <h3 className="text-sm font-medium text-foreground mb-4">Fee Breakdown</h3>
       <div className="flex items-center gap-6">
         <div className="h-[160px] w-[160px]">
@@ -58,6 +65,6 @@ export function FeeChart({ data, totalFees }: FeeChartProps) {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

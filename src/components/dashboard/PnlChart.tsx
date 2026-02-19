@@ -20,7 +20,13 @@ export function PnlChart({ data }: PnlChartProps) {
   };
 
   return (
-    <div className="kinetic-card rounded-lg p-5">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      className="kinetic-card rounded-lg p-5"
+    >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-overline">PnL Performance</h3>
         <div className="flex gap-0.5 border border-border/40 rounded-md p-0.5 bg-card">
@@ -77,6 +83,6 @@ export function PnlChart({ data }: PnlChartProps) {
           )}
         </ResponsiveContainer>
       </div>
-    </div>
+    </motion.div>
   );
 }
