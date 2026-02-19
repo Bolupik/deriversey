@@ -19,8 +19,12 @@ async function fetchOHLC(coinId: string, days = 30) {
   const res = await fetch(
     `https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=${days}`
   );
-  if (!res.ok) throw new Error("Failed to fetch OHLC");
+  if (!res.ok) {
+    if (res.status === 429) throw new Error("Rate limited — try again shortly");
+    throw new Error("Failed to fetch OHLC data");
+  }
   const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) throw new Error("No chart data available");
   return data.map((d: number[]) => ({
     time: Math.floor(d[0] / 1000) as any,
     open: d[1],
@@ -36,9 +40,14 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
   const [days, setDays] = useState(30);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lastPrice, setLastPrice] = useState<number | null>(null);
+  const [priceChange, setPriceChange] = useState<number>(0);
 
   useEffect(() => {
     if (!chartRef.current) return;
+
+    // Clear previous chart
+    chartRef.current.innerHTML = "";
 
     const chart = createChart(chartRef.current, {
       layout: {
@@ -85,6 +94,13 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
       .then((data) => {
         candleSeries.setData(data);
         chart.timeScale().fitContent();
+        // Set last price info
+        if (data.length > 0) {
+          const last = data[data.length - 1];
+          const first = data[0];
+          setLastPrice(last.close);
+          setPriceChange(((last.close - first.open) / first.open) * 100);
+        }
         setLoading(false);
       })
       .catch((e) => {
@@ -118,9 +134,21 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
   return (
     <div className="rounded-lg border border-border bg-card p-4 animate-slide-up">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-foreground">
-          {symbol}/USD Chart
-        </h3>
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-medium text-foreground font-mono">
+            {symbol}/USD
+          </h3>
+          {lastPrice !== null && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-mono font-semibold text-foreground">
+                ${lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: lastPrice < 1 ? 6 : 2 })}
+              </span>
+              <span className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded ${priceChange >= 0 ? "text-profit bg-profit/10" : "text-loss bg-loss/10"}`}>
+                {priceChange >= 0 ? "+" : ""}{priceChange.toFixed(2)}%
+              </span>
+            </div>
+          )}
+        </div>
         <div className="flex gap-1 rounded-md bg-muted p-0.5">
           {timeframes.map((tf) => (
             <button
@@ -145,8 +173,14 @@ export function TradingViewChart({ symbol = "SOL" }: TradingViewChartProps) {
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="absolute inset-0 flex items-center justify-center z-10 flex-col gap-2">
             <p className="text-xs text-muted-foreground">{error}</p>
+            <button
+              onClick={() => setDays((d) => d)}
+              className="text-[10px] text-primary hover:underline"
+            >
+              Retry
+            </button>
           </div>
         )}
         <div ref={chartRef} className="w-full h-full" />

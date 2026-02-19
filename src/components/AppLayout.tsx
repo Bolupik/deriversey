@@ -5,6 +5,7 @@ import { useState } from "react";
 import { WalletButton } from "@/components/WalletButton";
 import { MarketTicker } from "@/components/dashboard/MarketTicker";
 import { motion, AnimatePresence } from "framer-motion";
+import { OnboardingTour } from "@/components/OnboardingTour";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: BarChart3 },
@@ -133,6 +134,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </motion.div>
       </main>
+
+      <OnboardingTour />
     </div>
   );
 }
