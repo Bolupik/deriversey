@@ -1,66 +1,5 @@
 import { Trade, DailyPnl, FeeBreakdown, SymbolPerformance, SessionPerformance, PortfolioStats } from "@/types/trading";
 
-const symbols = ["SOL-PERP", "BTC-PERP", "ETH-PERP", "BONK-PERP", "JUP-PERP", "WIF-PERP"];
-const orderTypes = ["market", "limit", "stop-market", "stop-limit"] as const;
-
-function randomBetween(min: number, max: number) {
-  return Math.random() * (max - min) + min;
-}
-
-function generateTrades(count: number): Trade[] {
-  const trades: Trade[] = [];
-  const now = new Date();
-
-  for (let i = 0; i < count; i++) {
-    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-    const side = Math.random() > 0.45 ? "long" : "short" as const;
-    const orderType = orderTypes[Math.floor(Math.random() * orderTypes.length)];
-    const leverage = [1, 2, 3, 5, 10, 20][Math.floor(Math.random() * 6)];
-
-    const basePrice = symbol.includes("BTC") ? 95000 + randomBetween(-5000, 5000) :
-      symbol.includes("ETH") ? 3200 + randomBetween(-300, 300) :
-      symbol.includes("SOL") ? 180 + randomBetween(-30, 30) :
-      symbol.includes("BONK") ? 0.000025 + randomBetween(-0.000005, 0.000005) :
-      symbol.includes("JUP") ? 1.2 + randomBetween(-0.3, 0.3) :
-      2.5 + randomBetween(-0.5, 0.5);
-
-    const entryPrice = basePrice;
-    const priceChange = basePrice * randomBetween(-0.08, 0.1);
-    const exitPrice = side === "long" ? entryPrice + priceChange : entryPrice - priceChange;
-    const size = randomBetween(100, 50000);
-    const pnl = ((exitPrice - entryPrice) / entryPrice) * size * leverage * (side === "long" ? 1 : -1);
-    const fees = size * 0.0006 * 2;
-    const netPnl = pnl - fees;
-    const duration = Math.floor(randomBetween(2, 1440));
-
-    const entryTime = new Date(now.getTime() - randomBetween(0, 30 * 24 * 60 * 60 * 1000));
-    const exitTime = new Date(entryTime.getTime() + duration * 60 * 1000);
-
-    trades.push({
-      id: `trade-${i.toString().padStart(4, "0")}`,
-      symbol,
-      side,
-      orderType,
-      entryPrice,
-      exitPrice,
-      size,
-      leverage,
-      pnl: Math.round(netPnl * 100) / 100,
-      pnlPercent: Math.round((netPnl / size) * 10000) / 100,
-      fees: Math.round(fees * 100) / 100,
-      entryTime: entryTime.toISOString(),
-      exitTime: exitTime.toISOString(),
-      duration,
-      status: netPnl >= 0 ? "win" : "loss",
-      note: Math.random() > 0.7 ? ["Followed the plan", "Broke rules", "News catalyst", "Trend continuation", "Mean reversion play"][Math.floor(Math.random() * 5)] : undefined,
-    });
-  }
-
-  return trades.sort((a, b) => new Date(b.entryTime).getTime() - new Date(a.entryTime).getTime());
-}
-
-export const mockTrades = generateTrades(150);
-
 export function computeStats(trades: Trade[]): PortfolioStats {
   const wins = trades.filter(t => t.status === "win");
   const losses = trades.filter(t => t.status === "loss");
@@ -87,6 +26,15 @@ export function computeStats(trades: Trade[]): PortfolioStats {
   const grossProfit = wins.reduce((s, t) => s + t.pnl, 0);
   const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
 
+  // Compute Sharpe ratio from actual trade returns
+  const returns = trades.map(t => t.pnlPercent / 100);
+  const meanReturn = returns.length ? returns.reduce((a, b) => a + b, 0) / returns.length : 0;
+  const variance = returns.length > 1
+    ? returns.reduce((s, r) => s + (r - meanReturn) ** 2, 0) / (returns.length - 1)
+    : 0;
+  const stdDev = Math.sqrt(variance);
+  const sharpeRatio = stdDev > 0 ? Math.round((meanReturn / stdDev) * 100) / 100 : 0;
+
   return {
     totalPnl: Math.round(totalPnl * 100) / 100,
     totalPnlPercent: Math.round((totalPnl / (totalVolume || 1)) * 10000) / 100,
@@ -103,7 +51,7 @@ export function computeStats(trades: Trade[]): PortfolioStats {
     avgLoss: Math.round((losses.length ? grossLoss / losses.length : 0) * 100) / 100,
     profitFactor: Math.round((grossLoss ? grossProfit / grossLoss : 0) * 100) / 100,
     maxDrawdown: Math.round(maxDD * 100) / 100,
-    sharpeRatio: Math.round(randomBetween(0.5, 2.8) * 100) / 100,
+    sharpeRatio,
     consecutiveWins: consWins,
     consecutiveLosses: consLosses,
   };
