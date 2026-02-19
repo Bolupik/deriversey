@@ -1,6 +1,6 @@
 import { Trade, OrderType, TradeStatus } from "@/types/trading";
 import { useState } from "react";
-import { ArrowUp, ArrowDown, MessageSquare, Pencil, Trash2, Check, X, CircleDot } from "lucide-react";
+import { ArrowUp, ArrowDown, MessageSquare, Pencil, Trash2, Check, X, CircleDot, LogOut } from "lucide-react";
 import { useDeleteTrade, useUpdateTrade } from "@/hooks/useTrades";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -90,6 +90,9 @@ export function TradeTable({ trades }: TradeTableProps) {
   const [page, setPage] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [closingId, setClosingId] = useState<string | null>(null);
+  const [closeExitPrice, setCloseExitPrice] = useState("");
+  const [closeFees, setCloseFees] = useState("");
   const deleteTrade = useDeleteTrade();
   const updateTrade = useUpdateTrade();
   const { toast } = useToast();
@@ -118,11 +121,55 @@ export function TradeTable({ trades }: TradeTableProps) {
     }
   };
 
+  const handleClose = async (trade: Trade) => {
+    const exit = Number(closeExitPrice);
+    if (!exit || exit <= 0) {
+      toast({ title: "Invalid exit price", variant: "destructive" });
+      return;
+    }
+    const fees = Number(closeFees) || trade.fees;
+    const pnl = ((exit - trade.entryPrice) / trade.entryPrice) * trade.size * trade.leverage * (trade.side === "long" ? 1 : -1) - fees;
+    const pnlPercent = Math.round((pnl / trade.size) * 10000) / 100;
+    const now = new Date().toISOString();
+    const duration = Math.round((new Date(now).getTime() - new Date(trade.entryTime).getTime()) / 60000);
+    const status: TradeStatus = pnl >= 0 ? "win" : "loss";
+
+    try {
+      await updateTrade.mutateAsync({
+        ...trade,
+        exitPrice: exit,
+        exitTime: now,
+        pnl: Math.round(pnl * 100) / 100,
+        pnlPercent,
+        duration,
+        fees,
+        status,
+      });
+      toast({ title: `Trade closed — ${status === "win" ? "Win" : "Loss"}`, description: `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}` });
+      setClosingId(null);
+      setCloseExitPrice("");
+      setCloseFees("");
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   const statusBadge = (status: TradeStatus) => {
     if (status === "open") return "bg-warning/10 text-warning border-warning/20";
     if (status === "win") return "bg-profit/10 text-profit border-profit/20";
     return "bg-loss/10 text-loss border-loss/20";
   };
+
+  // Preview PnL for close form
+  const getClosePnlPreview = (trade: Trade) => {
+    const exit = Number(closeExitPrice);
+    if (!exit || exit <= 0) return null;
+    const fees = Number(closeFees) || trade.fees;
+    const pnl = ((exit - trade.entryPrice) / trade.entryPrice) * trade.size * trade.leverage * (trade.side === "long" ? 1 : -1) - fees;
+    return pnl;
+  };
+
+  const inputClass = "bg-muted/30 border border-border/60 rounded px-2 py-1.5 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50";
 
   return (
     <div className="rounded-xl border border-border/60 glass-card">
@@ -147,6 +194,8 @@ export function TradeTable({ trades }: TradeTableProps) {
                   return <EditRow key={trade.id} trade={trade} onCancel={() => setEditingId(null)} onSave={handleSave} />;
                 }
 
+                const isClosing = closingId === trade.id;
+
                 return (
                   <motion.tr
                     key={trade.id}
@@ -154,7 +203,7 @@ export function TradeTable({ trades }: TradeTableProps) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="border-b border-border/30 hover:bg-muted/20 transition-colors group"
+                    className={`border-b border-border/30 hover:bg-muted/20 transition-colors group ${isClosing ? "bg-warning/[0.03]" : ""}`}
                   >
                     <td className="px-3 py-2.5 font-mono text-muted-foreground">
                       {new Date(trade.entryTime).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
@@ -178,13 +227,47 @@ export function TradeTable({ trades }: TradeTableProps) {
                     </td>
                     <td className="px-3 py-2.5 font-mono">${trade.size.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
                     <td className="px-3 py-2.5 font-mono">${trade.entryPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+
+                    {/* Exit price — inline close input when closing */}
                     <td className="px-3 py-2.5 font-mono">
-                      {trade.exitPrice ? `$${trade.exitPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : <span className="text-muted-foreground">—</span>}
+                      {isClosing ? (
+                        <div className="flex flex-col gap-1">
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="Exit $"
+                            value={closeExitPrice}
+                            onChange={e => setCloseExitPrice(e.target.value)}
+                            className={`${inputClass} w-[90px]`}
+                            autoFocus
+                          />
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder={`Fees ($${trade.fees})`}
+                            value={closeFees}
+                            onChange={e => setCloseFees(e.target.value)}
+                            className={`${inputClass} w-[90px]`}
+                          />
+                        </div>
+                      ) : (
+                        trade.exitPrice ? `$${trade.exitPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : <span className="text-muted-foreground">—</span>
+                      )}
                     </td>
+
+                    {/* PnL — show live preview when closing */}
                     <td className={`px-3 py-2.5 font-mono font-medium ${
                       trade.status === "open" ? "text-muted-foreground" : trade.pnl >= 0 ? "text-profit" : "text-loss"
                     }`}>
-                      {trade.status === "open" ? "—" : (
+                      {isClosing ? (() => {
+                        const preview = getClosePnlPreview(trade);
+                        if (preview === null) return <span className="text-muted-foreground/50">Enter exit</span>;
+                        return (
+                          <span className={preview >= 0 ? "text-profit" : "text-loss"}>
+                            {preview >= 0 ? "+" : ""}${preview.toFixed(2)}
+                          </span>
+                        );
+                      })() : trade.status === "open" ? "—" : (
                         <>
                           {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toLocaleString()}
                           <br />
@@ -203,22 +286,55 @@ export function TradeTable({ trades }: TradeTableProps) {
                             <MessageSquare className="h-3 w-3" />
                           </span>
                         )}
-                        <button onClick={() => setEditingId(trade.id)} className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors">
-                          <Pencil className="h-3 w-3" />
-                        </button>
-                        {deletingId === trade.id ? (
-                          <div className="flex items-center gap-0.5">
-                            <button onClick={() => handleDelete(trade.id)} className="p-1 rounded text-loss hover:bg-loss/10 transition-colors">
-                              <Check className="h-3 w-3" />
-                            </button>
-                            <button onClick={() => setDeletingId(null)} className="p-1 rounded text-muted-foreground hover:bg-muted/40 transition-colors">
-                              <X className="h-3 w-3" />
-                            </button>
-                          </div>
-                        ) : (
-                          <button onClick={() => setDeletingId(trade.id)} className="p-1 rounded text-muted-foreground hover:text-loss hover:bg-loss/10 transition-colors">
-                            <Trash2 className="h-3 w-3" />
+
+                        {/* Close trade button — only for open trades */}
+                        {trade.status === "open" && !isClosing && (
+                          <button
+                            onClick={() => { setClosingId(trade.id); setCloseExitPrice(""); setCloseFees(""); setEditingId(null); }}
+                            className="p-1 rounded text-warning hover:bg-warning/10 transition-colors"
+                            title="Close trade"
+                          >
+                            <LogOut className="h-3 w-3" />
                           </button>
+                        )}
+
+                        {/* Close confirm/cancel */}
+                        {isClosing && (
+                          <>
+                            <button
+                              onClick={() => handleClose(trade)}
+                              disabled={updateTrade.isPending}
+                              className="p-1 rounded text-profit hover:bg-profit/10 transition-colors disabled:opacity-50"
+                              title="Confirm close"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </button>
+                            <button onClick={() => { setClosingId(null); setCloseExitPrice(""); setCloseFees(""); }} className="p-1 rounded text-muted-foreground hover:bg-muted/40 transition-colors">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </>
+                        )}
+
+                        {!isClosing && (
+                          <>
+                            <button onClick={() => setEditingId(trade.id)} className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors">
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                            {deletingId === trade.id ? (
+                              <div className="flex items-center gap-0.5">
+                                <button onClick={() => handleDelete(trade.id)} className="p-1 rounded text-loss hover:bg-loss/10 transition-colors">
+                                  <Check className="h-3 w-3" />
+                                </button>
+                                <button onClick={() => setDeletingId(null)} className="p-1 rounded text-muted-foreground hover:bg-muted/40 transition-colors">
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <button onClick={() => setDeletingId(trade.id)} className="p-1 rounded text-muted-foreground hover:text-loss hover:bg-loss/10 transition-colors">
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>
