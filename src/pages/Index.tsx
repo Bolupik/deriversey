@@ -16,6 +16,7 @@ import {
   computeOrderTypePerformance,
 } from "@/data/mockData";
 import { BarChart3 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const Index = () => {
   const { data: trades = [], isLoading } = useTrades();
@@ -86,26 +87,26 @@ const Index = () => {
           <TradingViewChart symbol="SOL" />
         </div>
         <div className="space-y-4">
-          <div className="rounded-lg border border-border bg-card p-5">
+          <div className="rounded-xl border border-border/60 glass-card p-5">
             <h3 className="text-sm font-medium text-foreground mb-3">Long/Short Ratio</h3>
             <div className="space-y-4">
               <div className="flex items-end gap-4">
                 <div className="flex-1">
                   <p className="text-xs text-muted-foreground mb-1">Long</p>
                   <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full rounded-full bg-profit transition-all duration-500" style={{ width: `${stats.longRatio}%` }} />
+                    <div className="h-full rounded-full bg-profit transition-all duration-700" style={{ width: `${stats.longRatio}%` }} />
                   </div>
                   <p className="text-lg font-mono font-semibold text-profit mt-1">{stats.longRatio}%</p>
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-muted-foreground mb-1">Short</p>
                   <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full rounded-full bg-loss transition-all duration-500" style={{ width: `${stats.shortRatio}%` }} />
+                    <div className="h-full rounded-full bg-loss transition-all duration-700" style={{ width: `${stats.shortRatio}%` }} />
                   </div>
                   <p className="text-lg font-mono font-semibold text-loss mt-1">{stats.shortRatio}%</p>
                 </div>
               </div>
-              <div className="pt-3 border-t border-border space-y-2.5">
+              <div className="pt-3 border-t border-border/40 space-y-2.5">
                 <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Quick Stats</h4>
                 {[
                   ["Profit Factor", stats.profitFactor.toString()],

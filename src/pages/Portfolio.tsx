@@ -36,10 +36,10 @@ export default function Portfolio() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
               onClick={() => setChartSymbol(sym)}
-              className={`rounded-lg border p-3 text-left transition-all ${
+              className={`rounded-xl border p-3 text-left transition-all duration-200 ${
                 isSelected
-                  ? "border-primary bg-primary/5"
-                  : "border-border bg-card hover:border-muted-foreground/30"
+                  ? "border-primary/50 glass-card border-glow"
+                  : "border-border/40 glass-card hover:border-muted-foreground/30"
               }`}
             >
               <p className="text-[10px] font-mono font-medium text-muted-foreground">{sym}</p>

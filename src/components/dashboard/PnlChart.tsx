@@ -10,7 +10,7 @@ export function PnlChart({ data }: PnlChartProps) {
   const [view, setView] = useState<"cumulative" | "daily">("cumulative");
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-xl border border-border/60 glass-card p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-foreground">PnL Performance</h3>
         <div className="flex gap-1 rounded-md bg-muted p-0.5">

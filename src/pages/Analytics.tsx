@@ -8,6 +8,7 @@ import {
   computeDailyPnl,
 } from "@/data/mockData";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { motion } from "framer-motion";
 
 export default function Analytics() {
   const { data: trades = [], isLoading } = useTrades();
@@ -74,7 +75,7 @@ export default function Analytics() {
 
       {/* Time-of-day chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-border bg-card p-5">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="rounded-xl border border-border/60 glass-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-4">PnL by Hour (UTC)</h3>
           <div className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -87,9 +88,9 @@ export default function Analytics() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="rounded-lg border border-border bg-card p-5">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-xl border border-border/60 glass-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-4">PnL by Day of Week</h3>
           <div className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -102,13 +103,13 @@ export default function Analytics() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Symbol, Session, Order type tables */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Symbol Performance */}
-        <div className="rounded-lg border border-border bg-card p-5">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-xl border border-border/60 glass-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-3">By Symbol</h3>
           <div className="space-y-2">
             {symbolPerf.map(s => (
@@ -123,10 +124,10 @@ export default function Analytics() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Session Performance */}
-        <div className="rounded-lg border border-border bg-card p-5">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-xl border border-border/60 glass-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-3">By Session</h3>
           <div className="space-y-2">
             {sessionPerf.map(s => (
@@ -141,10 +142,10 @@ export default function Analytics() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Order Type Performance */}
-        <div className="rounded-lg border border-border bg-card p-5">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="rounded-xl border border-border/60 glass-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-3">By Order Type</h3>
           <div className="space-y-2">
             {orderPerf.map(o => (
@@ -159,7 +160,7 @@ export default function Analytics() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
