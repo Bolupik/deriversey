@@ -1,6 +1,6 @@
 export type TradeSide = "long" | "short";
 export type OrderType = "market" | "limit" | "stop-market" | "stop-limit";
-export type TradeStatus = "win" | "loss";
+export type TradeStatus = "open" | "win" | "loss";
 
 export interface Trade {
   id: string;
