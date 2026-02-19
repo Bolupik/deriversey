@@ -23,6 +23,7 @@ export type Database = {
           preferred_symbols: string[] | null
           updated_at: string
           user_id: string
+          watchlist: string[]
         }
         Insert: {
           avatar_url?: string | null
@@ -32,6 +33,7 @@ export type Database = {
           preferred_symbols?: string[] | null
           updated_at?: string
           user_id: string
+          watchlist?: string[]
         }
         Update: {
           avatar_url?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           preferred_symbols?: string[] | null
           updated_at?: string
           user_id?: string
+          watchlist?: string[]
         }
         Relationships: []
       }

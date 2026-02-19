@@ -1,5 +1,6 @@
 import { PortfolioPanel } from "@/components/dashboard/PortfolioPanel";
 import { TradingViewChart } from "@/components/dashboard/TradingViewChart";
+import { WatchlistPanel } from "@/components/dashboard/WatchlistPanel";
 import { useTokenPrices } from "@/hooks/useTokenPrices";
 import { useState } from "react";
 import { Briefcase, TrendingUp, TrendingDown } from "lucide-react";
@@ -60,7 +61,10 @@ export default function Portfolio() {
         <div className="lg:col-span-2">
           <TradingViewChart symbol={chartSymbol} />
         </div>
-        <PortfolioPanel />
+        <div className="space-y-4">
+          <WatchlistPanel />
+          <PortfolioPanel />
+        </div>
       </div>
     </div>
   );
