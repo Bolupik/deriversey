@@ -1,5 +1,6 @@
 import { SessionPerformance } from "@/types/trading";
 import { Globe } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface SessionPanelProps {
   data: SessionPerformance[];
@@ -8,7 +9,13 @@ interface SessionPanelProps {
 
 export function SessionPanel({ data, orderTypeData }: SessionPanelProps) {
   return (
-    <div className="rounded-lg border border-border bg-card p-5 space-y-5">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+      className="rounded-lg border border-border bg-card p-5 space-y-5"
+    >
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Globe className="h-4 w-4 text-primary" />
@@ -48,6 +55,6 @@ export function SessionPanel({ data, orderTypeData }: SessionPanelProps) {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
