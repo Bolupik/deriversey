@@ -1,6 +1,7 @@
 import { DailyPnl } from "@/types/trading";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Bar } from "recharts";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface PnlChartProps {
   data: DailyPnl[];
@@ -9,23 +10,38 @@ interface PnlChartProps {
 export function PnlChart({ data }: PnlChartProps) {
   const [view, setView] = useState<"cumulative" | "daily">("cumulative");
 
+  const tooltipStyle = {
+    backgroundColor: "hsl(0, 0%, 7%)",
+    border: "1px solid hsl(0, 0%, 14%)",
+    borderRadius: "6px",
+    fontSize: "11px",
+    fontFamily: "'IBM Plex Mono', monospace",
+    color: "hsl(0, 0%, 85%)",
+  };
+
   return (
-    <div className="rounded-xl border border-border/60 glass-card p-5">
+    <div className="kinetic-card rounded-lg p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-foreground">PnL Performance</h3>
-        <div className="flex gap-1 rounded-md bg-muted p-0.5">
-          <button
-            onClick={() => setView("cumulative")}
-            className={`px-3 py-1 text-xs rounded transition-colors ${view === "cumulative" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Cumulative
-          </button>
-          <button
-            onClick={() => setView("daily")}
-            className={`px-3 py-1 text-xs rounded transition-colors ${view === "daily" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Daily
-          </button>
+        <h3 className="text-overline">PnL Performance</h3>
+        <div className="flex gap-0.5 border border-border/40 rounded-md p-0.5 bg-card">
+          {(["cumulative", "daily"] as const).map(v => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`relative px-3 py-1 text-[10px] font-mono rounded transition-all ${
+                view === v ? "text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {view === v && (
+                <motion.div
+                  layoutId="pnl-view"
+                  className="absolute inset-0 bg-foreground rounded"
+                  transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                />
+              )}
+              <span className="relative z-10 capitalize">{v}</span>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -35,44 +51,28 @@ export function PnlChart({ data }: PnlChartProps) {
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="pnlGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(187, 80%, 48%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(187, 80%, 48%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(162, 85%, 45%)" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="hsl(162, 85%, 45%)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="ddGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(350, 80%, 55%)" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="hsl(350, 80%, 55%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(0, 72%, 55%)" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="hsl(0, 72%, 55%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 16%)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(215, 12%, 50%)" }} tickFormatter={(v) => v.slice(5)} />
-              <YAxis tick={{ fontSize: 10, fill: "hsl(215, 12%, 50%)" }} tickFormatter={(v) => `$${v}`} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(220, 18%, 10%)",
-                  border: "1px solid hsl(220, 14%, 18%)",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  color: "hsl(210, 20%, 92%)",
-                }}
-              />
-              <Area type="monotone" dataKey="cumPnl" stroke="hsl(187, 80%, 48%)" fill="url(#pnlGrad)" strokeWidth={2} name="Cumulative PnL" />
-              <Area type="monotone" dataKey="drawdown" stroke="hsl(350, 80%, 55%)" fill="url(#ddGrad)" strokeWidth={1} name="Drawdown" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 12%)" />
+              <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(0, 0%, 42%)" }} tickFormatter={(v) => v.slice(5)} />
+              <YAxis tick={{ fontSize: 9, fill: "hsl(0, 0%, 42%)" }} tickFormatter={(v) => `$${v}`} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Area type="monotone" dataKey="cumPnl" stroke="hsl(162, 85%, 45%)" fill="url(#pnlGrad)" strokeWidth={1.5} name="Cumulative PnL" />
+              <Area type="monotone" dataKey="drawdown" stroke="hsl(0, 72%, 55%)" fill="url(#ddGrad)" strokeWidth={1} name="Drawdown" />
             </AreaChart>
           ) : (
             <ComposedChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 16%)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(215, 12%, 50%)" }} tickFormatter={(v) => v.slice(5)} />
-              <YAxis tick={{ fontSize: 10, fill: "hsl(215, 12%, 50%)" }} tickFormatter={(v) => `$${v}`} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(220, 18%, 10%)",
-                  border: "1px solid hsl(220, 14%, 18%)",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  color: "hsl(210, 20%, 92%)",
-                }}
-              />
-              <Bar dataKey="pnl" name="Daily PnL" fill="hsl(187, 80%, 48%)" radius={[2, 2, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(0, 0%, 12%)" />
+              <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(0, 0%, 42%)" }} tickFormatter={(v) => v.slice(5)} />
+              <YAxis tick={{ fontSize: 9, fill: "hsl(0, 0%, 42%)" }} tickFormatter={(v) => `$${v}`} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="pnl" name="Daily PnL" fill="hsl(162, 85%, 45%)" radius={[2, 2, 0, 0]} />
             </ComposedChart>
           )}
         </ResponsiveContainer>

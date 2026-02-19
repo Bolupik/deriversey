@@ -88,16 +88,14 @@ function TradeEntryPanel({ chartSymbol, onSymbolChange }: { chartSymbol: string;
     }
   };
 
-  const inputClass = "w-full rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/40 transition-all";
-  const labelClass = "text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block";
+  const inputClass = "w-full rounded-lg border border-border/40 bg-muted/10 px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/40 transition-colors";
+  const labelClass = "text-overline mb-1.5 block";
 
   return (
-    <div className="rounded-xl border border-border/60 glass-card p-5 h-full flex flex-col">
+    <div className="kinetic-card rounded-lg p-5 h-full flex flex-col">
       <div className="flex items-center gap-2 mb-5">
-        <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Send className="h-3.5 w-3.5 text-primary" />
-        </div>
-        <h3 className="text-sm font-semibold text-foreground">Log Trade</h3>
+        <Send className="h-3.5 w-3.5 text-primary" />
+        <h3 className="text-overline">Log Trade</h3>
       </div>
 
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-3">
@@ -238,7 +236,7 @@ function TradeEntryPanel({ chartSymbol, onSymbolChange }: { chartSymbol: string;
           <button
             type="submit"
             disabled={addTrade.isPending}
-            className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-all glow-primary"
+            className="w-full py-2.5 rounded-lg bg-foreground text-background text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
           >
             {addTrade.isPending ? (
               <span className="flex items-center justify-center gap-2">
@@ -275,37 +273,38 @@ export default function Journal() {
   }, [trades, selectedSymbol, dateRange]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-            <BookOpen className="h-4.5 w-4.5 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Trade Journal</h2>
-            <p className="text-xs text-muted-foreground">Log trades while watching the chart</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <p className="text-overline mb-2">Trade Log</p>
+          <h1 className="text-massive">Journal</h1>
+        </motion.div>
+        <div className="flex items-center gap-2 self-end">
           <button
             onClick={() => setShowImport(showImport === "onchain" ? "none" : "onchain")}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
-              showImport === "onchain" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-foreground hover:bg-muted/50"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${
+              showImport === "onchain" ? "border-primary/50 text-primary" : "border-border/40 text-muted-foreground hover:text-foreground"
             }`}
           >
             <Download className="h-3.5 w-3.5" /> On-Chain
           </button>
           <button
             onClick={() => setShowImport(showImport === "perps" ? "none" : "perps")}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
-              showImport === "perps" ? "border-primary/50 bg-primary/10 text-primary" : "border-border text-foreground hover:bg-muted/50"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-mono transition-colors ${
+              showImport === "perps" ? "border-primary/50 text-primary" : "border-border/40 text-muted-foreground hover:text-foreground"
             }`}
           >
             <Zap className="h-3.5 w-3.5" /> Perps
           </button>
         </div>
       </div>
+
+      <div className="border-b border-border/30" />
 
       {/* Import panels */}
       <AnimatePresence mode="wait">
@@ -322,7 +321,7 @@ export default function Journal() {
       </AnimatePresence>
 
       {/* Chart + Trade Entry side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
           <TradingViewChart symbol={chartSymbol} />
         </div>

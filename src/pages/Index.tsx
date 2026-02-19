@@ -46,7 +46,7 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center py-32">
         <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -54,20 +54,41 @@ const Index = () => {
 
   if (trades.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 glow-primary">
-          <BarChart3 className="h-7 w-7 text-primary" />
-        </div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">No trades yet</h2>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          Head to the <a href="/journal" className="text-primary hover:underline font-medium">Journal</a> to add your first trade, or connect your wallet on the <a href="/portfolio" className="text-primary hover:underline font-medium">Portfolio</a> page.
-        </p>
+      <div className="flex flex-col items-center justify-center py-32 text-center">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.8 }}
+        >
+          <BarChart3 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-6" />
+          <h2 className="text-massive mb-4">No trades yet</h2>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            Head to the <a href="/journal" className="text-primary hover:underline">Journal</a> to log your first trade.
+          </p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
+      {/* Hero stat */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <p className="text-overline mb-2">Performance Overview</p>
+        <h1 className="text-massive">
+          {stats.totalPnl >= 0 ? "+" : ""}${Math.abs(stats.totalPnl).toLocaleString()}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-2 font-mono">
+          {stats.totalTrades} trades · {stats.winRate}% win rate · {stats.totalPnlPercent >= 0 ? "+" : ""}{stats.totalPnlPercent}%
+        </p>
+      </motion.div>
+
+      <div className="border-b border-border/30" />
+
       <DashboardFilters
         symbols={symbols}
         selectedSymbol={selectedSymbol}
@@ -75,57 +96,70 @@ const Index = () => {
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
       />
+
       <StatsGrid stats={stats} />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
           <PnlChart data={dailyPnl} />
         </div>
         <FeeChart data={fees} totalFees={stats.totalFees} />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
           <TradingViewChart symbol="SOL" />
         </div>
-        <div className="space-y-4">
-          <div className="rounded-xl border border-border/60 glass-card p-5">
-            <h3 className="text-sm font-medium text-foreground mb-3">Long/Short Ratio</h3>
-            <div className="space-y-4">
-              <div className="flex items-end gap-4">
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground mb-1">Long</p>
-                  <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full rounded-full bg-profit transition-all duration-700" style={{ width: `${stats.longRatio}%` }} />
-                  </div>
-                  <p className="text-lg font-mono font-semibold text-profit mt-1">{stats.longRatio}%</p>
+        <div className="space-y-5">
+          <div className="rounded-lg kinetic-card p-5">
+            <h3 className="text-overline mb-4">Long / Short Ratio</h3>
+            <div className="flex items-end gap-4">
+              <div className="flex-1">
+                <p className="text-[10px] text-muted-foreground mb-1">Long</p>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${stats.longRatio}%` }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full rounded-full bg-primary"
+                  />
                 </div>
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground mb-1">Short</p>
-                  <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full rounded-full bg-loss transition-all duration-700" style={{ width: `${stats.shortRatio}%` }} />
-                  </div>
-                  <p className="text-lg font-mono font-semibold text-loss mt-1">{stats.shortRatio}%</p>
+                <p className="text-lg font-mono font-semibold text-foreground mt-1">{stats.longRatio}%</p>
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] text-muted-foreground mb-1">Short</p>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${stats.shortRatio}%` }}
+                    transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full rounded-full bg-loss"
+                  />
                 </div>
+                <p className="text-lg font-mono font-semibold text-foreground mt-1">{stats.shortRatio}%</p>
               </div>
-              <div className="pt-3 border-t border-border/40 space-y-2.5">
-                <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Quick Stats</h4>
-                {[
-                  ["Profit Factor", stats.profitFactor.toString()],
-                  ["Sharpe Ratio", stats.sharpeRatio.toString()],
-                  ["Max Drawdown", `$${stats.maxDrawdown.toLocaleString()}`],
-                  ["Best Streak", `${stats.consecutiveWins} wins`],
-                  ["Worst Streak", `${stats.consecutiveLosses} losses`],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">{label}</span>
-                    <span className="font-mono text-foreground">{value}</span>
-                  </div>
-                ))}
-              </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-border/30 space-y-2.5">
+              <h4 className="text-overline">Quick Stats</h4>
+              {[
+                ["Profit Factor", stats.profitFactor.toString()],
+                ["Sharpe Ratio", stats.sharpeRatio.toString()],
+                ["Max Drawdown", `$${stats.maxDrawdown.toLocaleString()}`],
+                ["Best Streak", `${stats.consecutiveWins} wins`],
+                ["Worst Streak", `${stats.consecutiveLosses} losses`],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="font-mono text-foreground">{value}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <SymbolTable data={symbolPerf} />
         <SessionPanel data={sessionPerf} orderTypeData={orderTypePerf} />
       </div>

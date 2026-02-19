@@ -1,31 +1,25 @@
-import { NavLink as RouterNavLink, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Activity, BarChart3, BookOpen, LineChart, User, LogOut, Menu, X, Briefcase } from "lucide-react";
+import { Activity, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { WalletButton } from "@/components/WalletButton";
 import { MarketTicker } from "@/components/dashboard/MarketTicker";
-import { motion, AnimatePresence } from "framer-motion";
+import { MagneticDock } from "@/components/MagneticDock";
+import { LenisProvider } from "@/components/LenisProvider";
 import { OnboardingTour } from "@/components/OnboardingTour";
-
-const navItems = [
-  { to: "/", label: "Dashboard", icon: BarChart3 },
-  { to: "/journal", label: "Journal", icon: BookOpen },
-  { to: "/analytics", label: "Analytics", icon: LineChart },
-  { to: "/portfolio", label: "Portfolio", icon: Briefcase },
-  { to: "/profile", label: "Profile", icon: User },
-];
+import { motion, AnimatePresence } from "framer-motion";
 
 const pageVariants = {
-  initial: { opacity: 0, x: 24, filter: "blur(4px)" },
-  animate: { opacity: 1, x: 0, filter: "blur(0px)" },
-  exit: { opacity: 0, x: -24, filter: "blur(4px)" },
+  initial: { opacity: 0, y: 30, filter: "blur(6px)" },
+  animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+  exit: { opacity: 0, y: -20, filter: "blur(4px)" },
 };
 
 const pageTransition = {
   type: "spring",
-  stiffness: 300,
+  stiffness: 200,
   damping: 30,
-  mass: 0.8,
+  mass: 1,
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -34,147 +28,103 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Ambient background glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-0 left-1/4 w-[800px] h-[600px] rounded-full bg-primary/[0.03] blur-[150px]" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[500px] rounded-full bg-primary/[0.02] blur-[120px]" />
-      </div>
+    <LenisProvider>
+      <div className="min-h-screen bg-background grain relative">
+        {/* Minimal top bar */}
+        <header className="fixed top-0 left-0 right-0 z-40 border-b border-border/30">
+          <div className="bg-background/80 backdrop-blur-sm">
+            <div className="max-w-[1600px] mx-auto px-6 sm:px-8">
+              {/* Ticker */}
+              <div className="border-b border-border/20 overflow-hidden">
+                <MarketTicker />
+              </div>
 
-      {/* Market Ticker Bar */}
-      <div className="relative z-10 border-b border-border/50 bg-card/10 overflow-hidden">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-          <MarketTicker />
-        </div>
-      </div>
+              {/* Top bar */}
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <Activity className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-semibold tracking-tight text-foreground">Deriverse</span>
+                  <span className="text-overline hidden sm:inline ml-2">Solana Analytics</span>
+                </div>
 
-      {/* Header */}
-      <header className="relative z-50 border-b border-border/50 glass sticky top-0">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <motion.div
-              whileHover={{ scale: 1.05, rotate: 2 }}
-              whileTap={{ scale: 0.95 }}
-              className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center glow-primary"
-            >
-              <Activity className="h-4.5 w-4.5 text-primary" />
-            </motion.div>
-            <div className="hidden sm:block">
-              <h1 className="text-sm font-semibold text-foreground tracking-tight leading-none">
-                Deriverse
-              </h1>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Solana Analytics</p>
+                <div className="flex items-center gap-3">
+                  <WalletButton />
+                  <span className="text-overline hidden lg:inline truncate max-w-[140px]">{user?.email}</span>
+                  <button
+                    onClick={signOut}
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setMobileOpen(!mobileOpen)}
+                    className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
+        </header>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-0.5 bg-muted/20 rounded-xl p-1 border border-border/30">
-            {navItems.map(({ to, label, icon: Icon }) => {
-              const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
-              return (
-                <RouterNavLink
-                  key={to}
-                  to={to}
-                  end={to === "/"}
-                  className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-                    isActive
-                      ? "text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="nav-active"
-                      className="absolute inset-0 bg-primary rounded-lg shadow-lg"
-                      style={{ boxShadow: "0 0 20px -4px hsl(162 85% 45% / 0.3)" }}
-                      transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-1.5">
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
-                  </span>
-                </RouterNavLink>
-              );
-            })}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <WalletButton />
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-medium bg-profit/10 text-profit border border-profit/20">
-              <span className="h-1.5 w-1.5 rounded-full bg-profit animate-pulse-glow" />
-              Mainnet
-            </span>
-            <span className="text-xs text-muted-foreground hidden lg:inline truncate max-w-[120px]">{user?.email}</span>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={signOut}
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-            </motion.button>
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-              {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Nav */}
+        {/* Mobile nav overlay */}
         <AnimatePresence>
           {mobileOpen && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-              className="md:hidden border-t border-border/50 overflow-hidden glass"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-30 bg-background/95 backdrop-blur-sm md:hidden"
+              onClick={() => setMobileOpen(false)}
             >
-              <div className="px-4 py-3 space-y-1">
-                {navItems.map(({ to, label, icon: Icon }, i) => (
-                  <motion.div
+              <div className="pt-32 px-8 space-y-4">
+                {[
+                  { to: "/", label: "Dashboard" },
+                  { to: "/journal", label: "Journal" },
+                  { to: "/analytics", label: "Analytics" },
+                  { to: "/portfolio", label: "Portfolio" },
+                  { to: "/profile", label: "Profile" },
+                ].map(({ to, label }, i) => (
+                  <motion.a
                     key={to}
-                    initial={{ opacity: 0, x: -12 }}
+                    href={to}
+                    initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: i * 0.06 }}
+                    className="block text-3xl font-editorial text-foreground hover:text-primary transition-colors"
                   >
-                    <RouterNavLink
-                      to={to}
-                      end={to === "/"}
-                      onClick={() => setMobileOpen(false)}
-                      className={({ isActive }) =>
-                        `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                          isActive ? "bg-primary/10 text-primary border-glow" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                        }`
-                      }
-                    >
-                      <Icon className="h-4 w-4" />
-                      {label}
-                    </RouterNavLink>
-                  </motion.div>
+                    {label}
+                  </motion.a>
                 ))}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </header>
 
-      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 py-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={pageTransition}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
-      </main>
+        {/* Main content */}
+        <main className="relative z-10 max-w-[1600px] mx-auto px-6 sm:px-8 pt-28 pb-24">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={pageTransition}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
 
-      <OnboardingTour />
-    </div>
+        {/* Floating dock nav — hidden on mobile */}
+        <div className="hidden md:block">
+          <MagneticDock />
+        </div>
+
+        <OnboardingTour />
+      </div>
+    </LenisProvider>
   );
 }
