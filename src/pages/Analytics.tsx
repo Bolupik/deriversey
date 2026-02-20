@@ -1,17 +1,19 @@
 import { useMemo } from "react";
-import { useTrades } from "@/hooks/useTrades";
+import { useDeriverseData } from "@/hooks/useDeriverseData";
+import { useWallet } from "@solana/wallet-adapter-react";
 import {
   computeStats,
   computeSymbolPerformance,
   computeSessionPerformance,
   computeOrderTypePerformance,
-  computeDailyPnl,
 } from "@/data/mockData";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
+import { Wallet } from "lucide-react";
 
 export default function Analytics() {
-  const { data: trades = [], isLoading } = useTrades();
+  const { connected } = useWallet();
+  const { data: trades = [], isLoading } = useDeriverseData();
 
   const stats = useMemo(() => computeStats(trades), [trades]);
   const symbolPerf = useMemo(() => computeSymbolPerformance(trades), [trades]);
@@ -46,11 +48,27 @@ export default function Analytics() {
     );
   }
 
+  if (!connected) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-center">
+        <Wallet className="h-12 w-12 text-muted-foreground/30 mx-auto mb-6" />
+        <h2 className="text-massive mb-4">Connect Wallet</h2>
+        <p className="text-sm text-muted-foreground">Connect your wallet to see Deriverse analytics.</p>
+      </div>
+    );
+  }
+
   if (trades.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
         <h2 className="text-massive mb-4">No data</h2>
-        <p className="text-sm text-muted-foreground">Add trades in the Journal to see analytics here.</p>
+        <p className="text-sm text-muted-foreground">
+          No Deriverse trades found. Trade on{" "}
+          <a href="https://alpha.deriverse.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            alpha.deriverse.io
+          </a>{" "}
+          to see analytics here.
+        </p>
       </div>
     );
   }
@@ -71,7 +89,7 @@ export default function Analytics() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p className="text-overline mb-2">Deep Insights</p>
+        <p className="text-overline mb-2">Deriverse Insights</p>
         <h1 className="text-massive">Analytics</h1>
       </motion.div>
 
