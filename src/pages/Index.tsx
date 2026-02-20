@@ -6,7 +6,8 @@ import { SymbolTable } from "@/components/dashboard/SymbolTable";
 import { SessionPanel } from "@/components/dashboard/SessionPanel";
 import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
 import { TradingViewChart } from "@/components/dashboard/TradingViewChart";
-import { useTrades } from "@/hooks/useTrades";
+import { useDeriverseData } from "@/hooks/useDeriverseData";
+import { useWallet } from "@solana/wallet-adapter-react";
 import {
   computeStats,
   computeDailyPnl,
@@ -15,11 +16,12 @@ import {
   computeSessionPerformance,
   computeOrderTypePerformance,
 } from "@/data/mockData";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Index = () => {
-  const { data: trades = [], isLoading } = useTrades();
+  const { connected } = useWallet();
+  const { data: trades = [], isLoading } = useDeriverseData();
   const [selectedSymbol, setSelectedSymbol] = useState("all");
   const [dateRange, setDateRange] = useState("30d");
 
@@ -52,6 +54,24 @@ const Index = () => {
     );
   }
 
+  if (!connected) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-center">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.8 }}
+        >
+          <Wallet className="h-12 w-12 text-muted-foreground/30 mx-auto mb-6" />
+          <h2 className="text-massive mb-4">Connect Wallet</h2>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            Connect your Solana wallet to view your Deriverse trading analytics.
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (trades.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
@@ -63,7 +83,11 @@ const Index = () => {
           <BarChart3 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-6" />
           <h2 className="text-massive mb-4">No trades yet</h2>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-            Head to the <a href="/journal" className="text-primary hover:underline">Journal</a> to log your first trade.
+            No Deriverse trades found for this wallet. Start trading on{" "}
+            <a href="https://alpha.deriverse.io" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              alpha.deriverse.io
+            </a>{" "}
+            to see your analytics here.
           </p>
         </motion.div>
       </div>
@@ -78,7 +102,7 @@ const Index = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p className="text-overline mb-2">Performance Overview</p>
+        <p className="text-overline mb-2">Deriverse Performance</p>
         <h1 className="text-massive">
           {stats.totalPnl >= 0 ? "+" : ""}${Math.abs(stats.totalPnl).toLocaleString()}
         </h1>
